@@ -1,5 +1,6 @@
 # Cisco spi POC
-The is a project that demostrate creating an aws infrastructure that consist of an nginx web server behind a classic load balancer using terraform 
+The is a project that demostrate creating an aws infrastructure that consist of an nginx web server behind a classic load balancer using terraform .
+
 This tool when run will do the following :
 create a vpc
 create a public subnet 
