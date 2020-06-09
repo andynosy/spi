@@ -13,7 +13,7 @@ create a routing table and associate it with the public subnet .
 
 create a classic load balancer .
 
-create a dev instance , the instance will using a userdata do the follwing .
+create a dev instance , the instance will using a userdata do the following .
 
   a. install docker and start docker .
   
