@@ -21,7 +21,7 @@ create a dev instance , the instance will using a userdata do the following .
   
   c. Create a container using the custom image it pulled down .
   
-  NOTE : The output will contain the url to the load balancer dns to access your 
+  NOTE : The output will contain the url to the load balancer dns to access the web page
   
   
 # DEPENDENCIES
