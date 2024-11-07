@@ -7,6 +7,12 @@ load_dotenv()
 confluence_domain = os.getenv("CONFLUENCE_DOMAIN")
 personal_access_token = os.getenv("PERSONAL_ACCESS_TOKEN")
 
+# Define the proxy settings using HTTP_PROXY and HTTPS_PROXY from the .env file
+proxies = {
+    "http": os.getenv("HTTP_PROXY"),
+    "https": os.getenv("HTTPS_PROXY")
+}
+
 # Set up headers with Personal Access Token using Bearer authentication
 headers = {
     "Authorization": f"Bearer {personal_access_token}",
@@ -35,7 +41,7 @@ def fetch_pages_in_space(space_key, parent_page_id=None):
         url = f"{confluence_domain}/rest/api/content?spaceKey={space_key}&expand=body.storage&limit=100"
     
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, proxies=proxies, timeout=10)
         response.raise_for_status()  # Raise an HTTPError for bad responses (4xx, 5xx)
         
         data = response.json()
@@ -56,15 +62,8 @@ def fetch_pages_in_space(space_key, parent_page_id=None):
             # Recursively fetch subpages of this page, but keep it within the same space
             all_pages.extend(fetch_pages_in_space(space_key, page_id))
 
-    except requests.exceptions.HTTPError as http_err:
-        if response.status_code == 401:
-            print("Error: Authentication failed. Check your personal access token.")
-        elif response.status_code == 404:
-            print(f"Error: Page not found for ID {parent_page_id if parent_page_id else 'root of space'}.")
-        elif response.status_code == 500:
-            print("Error: Internal server error at Confluence.")
-        else:
-            print(f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ProxyError as proxy_err:
+        print(f"Proxy error: {proxy_err}")
     except requests.exceptions.ConnectionError as conn_err:
         print(f"Network connection error: {conn_err}")
     except requests.exceptions.Timeout as timeout_err:
