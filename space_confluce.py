@@ -60,19 +60,19 @@ def fetch_pages_in_space(space_key, parent_page_id=None):
         if response.status_code == 401:
             print("Error: Authentication failed. Check your personal access token.")
         elif response.status_code == 404:
-            print(f"Error: Page not found for ID {parent_page_id if parent_page_id else 'root of space'}")
+            print(f"Error: Page not found for ID {parent_page_id if parent_page_id else 'root of space'}.")
         elif response.status_code == 500:
             print("Error: Internal server error at Confluence.")
         else:
             print(f"HTTP error occurred: {http_err}")
-    except requests.exceptions.ConnectionError:
-        print("Error: Network connection error. Please check your internet connection or proxy settings.")
-    except requests.exceptions.Timeout:
-        print("Error: Request timed out. The server may be busy or unreachable.")
-    except requests.exceptions.RequestException as e:
-        print(f"An unexpected error occurred: {e}")
-    except ValueError:
-        print("Error: Failed to parse JSON response. The response might not be in JSON format.")
+    except requests.exceptions.ConnectionError as conn_err:
+        print(f"Network connection error: {conn_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        print(f"Request timed out: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        print(f"An unexpected request error occurred: {req_err}")
+    except ValueError as val_err:
+        print(f"Error: Failed to parse JSON response - {val_err}")
     except KeyError as key_err:
         print(f"Error: Missing expected data in the response - {key_err}")
 
