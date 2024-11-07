@@ -7,9 +7,9 @@ load_dotenv()
 confluence_domain = os.getenv("CONFLUENCE_DOMAIN")
 personal_access_token = os.getenv("PERSONAL_ACCESS_TOKEN")
 
-# Set up headers with Personal Access Token
+# Set up headers with Personal Access Token using Bearer authentication
 headers = {
-    "Authorization": f"Basic {personal_access_token}",
+    "Authorization": f"Bearer {personal_access_token}",
     "Content-Type": "application/json"
 }
 
@@ -34,9 +34,10 @@ def fetch_pages_in_space(space_key, parent_page_id=None):
         # Fetch all root pages in the specified space
         url = f"{confluence_domain}/rest/api/content?spaceKey={space_key}&expand=body.storage&limit=100"
     
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx, 5xx)
+        
         data = response.json()
         pages = data.get("results", [])
 
@@ -55,8 +56,25 @@ def fetch_pages_in_space(space_key, parent_page_id=None):
             # Recursively fetch subpages of this page, but keep it within the same space
             all_pages.extend(fetch_pages_in_space(space_key, page_id))
 
-    else:
-        print(f"Failed to fetch pages for space '{space_key}' and page ID '{parent_page_id}'. Status code: {response.status_code}")
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 401:
+            print("Error: Authentication failed. Check your personal access token.")
+        elif response.status_code == 404:
+            print(f"Error: Page not found for ID {parent_page_id if parent_page_id else 'root of space'}")
+        elif response.status_code == 500:
+            print("Error: Internal server error at Confluence.")
+        else:
+            print(f"HTTP error occurred: {http_err}")
+    except requests.exceptions.ConnectionError:
+        print("Error: Network connection error. Please check your internet connection or proxy settings.")
+    except requests.exceptions.Timeout:
+        print("Error: Request timed out. The server may be busy or unreachable.")
+    except requests.exceptions.RequestException as e:
+        print(f"An unexpected error occurred: {e}")
+    except ValueError:
+        print("Error: Failed to parse JSON response. The response might not be in JSON format.")
+    except KeyError as key_err:
+        print(f"Error: Missing expected data in the response - {key_err}")
 
     return all_pages
 
